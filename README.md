@@ -128,6 +128,120 @@ Common validation error messages:
 
 ---
 
+## User Login
+
+Authenticate an existing user with email and password. On success, the API verifies credentials and returns a JWT auth token.
+
+### Endpoint
+
+```
+POST /users/login
+```
+
+### Headers
+
+| Header         | Value              | Required |
+|----------------|--------------------|----------|
+| `Content-Type` | `application/json` | Yes      |
+
+### Request Body
+
+Send a JSON object with the following fields:
+
+| Field      | Type   | Required | Validation |
+|------------|--------|----------|------------|
+| `email`    | string | Yes      | Must be a valid email address |
+| `password` | string | Yes      | Minimum 6 characters |
+
+#### Example Request
+
+```json
+{
+  "email": "john.doe@example.com",
+  "password": "secure123"
+}
+```
+
+#### cURL Example
+
+```bash
+curl -X POST http://localhost:3000/users/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "john.doe@example.com",
+    "password": "secure123"
+  }'
+```
+
+---
+
+### Response
+
+#### `200 OK` — Login successful
+
+Credentials were valid and an auth token was generated.
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "_id": "665f1a2b3c4d5e6f7a8b9c0d",
+    "fullname": {
+      "firstname": "John",
+      "lastname": "Doe"
+    },
+    "email": "john.doe@example.com"
+  }
+}
+```
+
+> **Note:** The `password` field is excluded from the user object in responses (`select: false` on the schema).
+
+#### `400 Bad Request` — Validation failed
+
+Returned when request data fails express-validator checks.
+
+```json
+{
+  "errors": [
+    {
+      "type": "field",
+      "value": "bad-email",
+      "msg": "Invalid Email",
+      "path": "email",
+      "location": "body"
+    }
+  ]
+}
+```
+
+Common validation error messages:
+
+| Field      | Message |
+|------------|---------|
+| `email`    | `Invalid Email` |
+| `password` | `Password must be greater than 3 character` |
+
+#### `401 Unauthorized` — Invalid credentials
+
+Returned when no user exists with the given email, or the password does not match.
+
+```json
+{
+  "message": " Invalid email or password"
+}
+```
+
+---
+
+### Flow
+
+1. **Route** (`routes/user.routes.js`) — Validates `email` and `password` using express-validator.
+2. **Controller** (`controllers/user.controller.js`) — Checks validation results, finds the user by email (including password via `select("+password")`), compares the password with bcrypt, and generates a token.
+3. **Model** (`models/user.model.js`) — Provides `comparePassword` and `generateAuthToken` methods.
+
+---
+
 ### Database Schema (User)
 
 | Field               | Type   | Notes |
