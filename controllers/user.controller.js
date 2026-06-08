@@ -3,6 +3,7 @@ const userModel = require("../models/user.model.js");
 const userService = require("../services/user.services.js");
 const {validationResult} = require("express-validator");
 
+
 module.exports.registerUser = async (req , res , next) => {
     const errors = validationResult(req); 
     // we will got all the validation in user.routes if got anything error in any of them.
@@ -67,10 +68,14 @@ module.exports.getUserProfile = async (req, res, next) => {
 };
 
 module.exports.logoutUser = async(req , res , next) => {
-    res.clearCookie("token");
-    const token = req.cookies.token || req.header.authorization.split(" ")[1];
+    const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
 
-    await blacklistTokenModel.create({token});
-    
+    if(!token){
+        return res.status(401).json({message : "Unauthorized"});
+    }
+
+    await blacklistTokenModel.create({ token });
+    res.clearCookie("token");
+
     res.status(200).json({message : "Logged Out!"})
 }

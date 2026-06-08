@@ -242,6 +242,114 @@ Returned when no user exists with the given email, or the password does not matc
 
 ---
 
+## Get User Profile
+
+Fetch the authenticated user's profile. This route requires a valid JWT token, which is usually sent as the `token` cookie after login or registration.
+
+### Endpoint
+
+```
+GET /users/profile
+```
+
+### Authentication
+
+| Header / Cookie | Value | Required |
+|-----------------|-------|----------|
+| `Cookie`        | `token=<jwt>` | Yes |
+| `Authorization` | `Bearer <jwt>` | Yes, if not using cookies |
+
+### cURL Example
+
+```bash
+curl -X GET http://localhost:3000/users/profile \
+  --cookie "token=YOUR_JWT_TOKEN"
+```
+
+Or with a bearer token:
+
+```bash
+curl -X GET http://localhost:3000/users/profile \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+### Response
+
+#### `200 OK` — Profile fetched successfully
+
+```json
+{
+  "_id": "665f1a2b3c4d5e6f7a8b9c0d",
+  "fullname": {
+    "firstname": "John",
+    "lastname": "Doe"
+  },
+  "email": "john.doe@example.com",
+  "socketId": null
+}
+```
+
+#### `401 Unauthorized` — Missing or invalid token
+
+```json
+{
+  "message": "Unauthorized"
+}
+```
+
+---
+
+## User Logout
+
+Log out the currently authenticated user. The token is cleared from the cookie and added to the blacklist so it cannot be reused.
+
+### Endpoint
+
+```
+GET /users/logout
+```
+
+### Authentication
+
+| Header / Cookie | Value | Required |
+|-----------------|-------|----------|
+| `Cookie`        | `token=<jwt>` | Yes |
+| `Authorization` | `Bearer <jwt>` | Yes, if not using cookies |
+
+### cURL Example
+
+```bash
+curl -X GET http://localhost:3000/users/logout \
+  --cookie "token=YOUR_JWT_TOKEN"
+```
+
+Or with a bearer token:
+
+```bash
+curl -X GET http://localhost:3000/users/logout \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+### Response
+
+#### `200 OK` — Logout successful
+
+```json
+{
+  "message": "Logged Out!"
+}
+```
+
+#### `401 Unauthorized` — Missing or invalid token
+
+```json
+{
+  "message": "Unauthorized"
+}
+```
+
+---
+
 ### Database Schema (User)
 
 | Field               | Type   | Notes |
