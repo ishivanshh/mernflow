@@ -5,6 +5,7 @@ dotenv.config();
 const cors = require("cors");
 const connectDb = require("./db/db.js");
 connectDb();
+const cookieParser = require("cookie-parser")
 const userRoutes = require("./routes/user.routes.js");
 const userModel = require("./models/user.model.js");
 
@@ -13,6 +14,7 @@ const userModel = require("./models/user.model.js");
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded ({ extended : true}));
+app.use(cookieParser);
 
 
 app.get("/" , (req , res) => {
