@@ -350,6 +350,244 @@ curl -X GET http://localhost:3000/users/logout \
 
 ---
 
+## Captain API
+
+Captain routes are mounted under `/captains` and follow the same JWT flow as the user routes. Register and login return a token, while profile and logout require an authenticated captain token.
+
+### Base Routes
+
+| Route | Method | Auth Required | Description |
+|-------|--------|---------------|-------------|
+| `/captains/register` | `POST` | No | Create a new captain account |
+| `/captains/login` | `POST` | No | Authenticate an existing captain |
+| `/captains/profile` | `GET` | Yes | Fetch the logged-in captain profile |
+| `/captains/logout` | `GET` | Yes | Blacklist the current token and clear the auth cookie |
+
+### Captain Register
+
+Create a new captain account with personal details and vehicle information.
+
+#### Endpoint
+
+```http
+POST /captains/register
+```
+
+#### Request Body
+
+| Field | Type | Required | Validation |
+|-------|------|----------|------------|
+| `fullname.firstname` | string | Yes | Minimum 3 characters |
+| `fullname.lastname` | string | No | Optional |
+| `email` | string | Yes | Must be a valid email address |
+| `password` | string | Yes | Minimum 6 characters |
+| `vehicle.color` | string | Yes | Minimum 3 characters |
+| `vehicle.plate` | string | Yes | Minimum 3 characters |
+| `vehicle.capacity` | number | Yes | Integer, minimum 3 |
+| `vehicle.vehicleType` | string | Yes | Must be one of `car`, `motorcycle`, `auto` |
+
+#### Example Request
+
+```json
+{
+  "fullname": {
+    "firstname": "Aman",
+    "lastname": "Sharma"
+  },
+  "email": "aman@example.com",
+  "password": "secure123",
+  "vehicle": {
+    "color": "White",
+    "plate": "MH12AB1234",
+    "capacity": 4,
+    "vehicleType": "car"
+  }
+}
+```
+
+#### Response
+
+##### `201 Created` — Registration successful
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "captain": {
+    "_id": "665f1a2b3c4d5e6f7a8b9c0e",
+    "fullname": {
+      "firstname": "Aman",
+      "lastname": "Sharma"
+    },
+    "email": "aman@example.com",
+    "vehicle": {
+      "color": "White",
+      "plate": "MH12AB1234",
+      "capacity": 4,
+      "vehicleType": "car"
+    },
+    "status": "inactive"
+  }
+}
+```
+
+##### `400 Bad Request` — Validation failed
+
+Returned when the request body fails express-validator checks.
+
+##### `409 Conflict` — Captain already exists
+
+Returned when another captain already uses the same email address.
+
+### Captain Login
+
+Authenticate an existing captain with email and password. On success, the token is returned in the JSON response and also stored in a `token` cookie.
+
+#### Endpoint
+
+```http
+POST /captains/login
+```
+
+#### Request Body
+
+| Field | Type | Required | Validation |
+|-------|------|----------|------------|
+| `email` | string | Yes | Must be a valid email address |
+| `password` | string | Yes | Minimum 6 characters |
+
+#### Example Request
+
+```json
+{
+  "email": "aman@example.com",
+  "password": "secure123"
+}
+```
+
+#### Response
+
+##### `200 OK` — Login successful
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "captain": {
+    "_id": "665f1a2b3c4d5e6f7a8b9c0e",
+    "fullname": {
+      "firstname": "Aman",
+      "lastname": "Sharma"
+    },
+    "email": "aman@example.com"
+  }
+}
+```
+
+##### `400 Bad Request` — Validation failed
+
+##### `401 Unauthorized` — Invalid credentials
+
+Returned when the email does not exist or the password does not match.
+
+### Captain Profile
+
+Fetch the authenticated captain profile.
+
+#### Endpoint
+
+```http
+GET /captains/profile
+```
+
+#### Authentication
+
+| Header / Cookie | Value | Required |
+|-----------------|-------|----------|
+| `Cookie` | `token=<jwt>` | Yes |
+| `Authorization` | `Bearer <jwt>` | Yes, if not using cookies |
+
+#### Example Request
+
+```bash
+curl -X GET http://localhost:3000/captains/profile \
+  --cookie "token=YOUR_JWT_TOKEN"
+```
+
+Or with a bearer token:
+
+```bash
+curl -X GET http://localhost:3000/captains/profile \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+#### Response
+
+##### `200 OK` — Profile fetched successfully
+
+```json
+{
+  "_id": "665f1a2b3c4d5e6f7a8b9c0e",
+  "fullname": {
+    "firstname": "Aman",
+    "lastname": "Sharma"
+  },
+  "email": "aman@example.com",
+  "vehicle": {
+    "color": "White",
+    "plate": "MH12AB1234",
+    "capacity": 4,
+    "vehicleType": "car"
+  },
+  "status": "inactive"
+}
+```
+
+##### `401 Unauthorized` — Missing or invalid token
+
+### Captain Logout
+
+Log out the currently authenticated captain. The token is cleared from the cookie and added to the blacklist so it cannot be reused.
+
+#### Endpoint
+
+```http
+GET /captains/logout
+```
+
+#### Authentication
+
+| Header / Cookie | Value | Required |
+|-----------------|-------|----------|
+| `Cookie` | `token=<jwt>` | Yes |
+| `Authorization` | `Bearer <jwt>` | Yes, if not using cookies |
+
+#### Example Request
+
+```bash
+curl -X GET http://localhost:3000/captains/logout \
+  --cookie "token=YOUR_JWT_TOKEN"
+```
+
+Or with a bearer token:
+
+```bash
+curl -X GET http://localhost:3000/captains/logout \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+#### Response
+
+##### `200 OK` — Logout successful
+
+```json
+{
+  "message": "logout successfully!!"
+}
+```
+
+##### `401 Unauthorized` — Missing or invalid token
+
+---
+
 ### Database Schema (User)
 
 | Field               | Type   | Notes |

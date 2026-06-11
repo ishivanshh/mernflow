@@ -4,14 +4,12 @@ const userService = require("../services/user.services.js");
 const {validationResult} = require("express-validator");
 
 
-module.exports.registerUser = async (req , res , next) => {
+module.exports.registerUser = async (req, res, next) => {
     const errors = validationResult(req); 
     // we will got all the validation in user.routes if got anything error in any of them.
     
     if(!errors.isEmpty()){
-        return 
-        res.status(400)
-        .json({errors : errors.array() }); // we will got error message in array
+        return res.status(400).json({errors : errors.array()}); // we will got error message in array
     };
 
     console.log(req.body);
@@ -20,8 +18,8 @@ module.exports.registerUser = async (req , res , next) => {
     
     const isUserAlreadyExists = await userModel.findOne({  email });
 
-    if(!isUserAlreadyExists){
-        return res.status(200).json("User with this email address already exist")
+    if(isUserAlreadyExists){
+        return res.status(409).json("User with this email address already exists")
     }
     const hashedPassword = await userModel.hashPassword(password);
     
@@ -79,7 +77,11 @@ module.exports.logoutUser = async(req , res , next) => {
         return res.status(401).json({message : "Unauthorized"});
     }
 
-    await blacklistTokenModel.create({ token });
+    const isBlacklisted = await blacklistTokenModel.findOne({ token });
+
+    if(!isBlacklisted){
+        await blacklistTokenModel.create({ token });
+    }
     res.clearCookie("token");
 
     res.status(200).json({message : "Logged Out!"})
