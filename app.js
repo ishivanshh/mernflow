@@ -7,6 +7,8 @@ const connectDb = require("./db/db.js");
 connectDb();
 const cookieParser = require("cookie-parser");
 const userRoutes = require("./routes/user.routes.js");
+const captainRoutes = require("./routes/captain.routes.js");
+
 
 
 //only for development phase we are accepting request from every website but at after it we will add domain of that website and will accept only that.
@@ -21,7 +23,7 @@ app.get("/" , (req , res) => {
 });
 
 app.use("/users" , userRoutes);
-
+app.use("/captains" , captainRoutes);
 
 module.exports = app;
 
