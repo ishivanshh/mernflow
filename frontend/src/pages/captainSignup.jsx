@@ -15,9 +15,9 @@ const captainSignup = () => {
     e.preventDefault();
     // console.log(email , password);
     setUserData({
-      username: {
-        firstname: firstname,
-        lastname: lastname
+      fullName: {
+        firstName: firstname,
+        lastName: lastname
       },
       email: email,
       password: password
@@ -81,7 +81,7 @@ const captainSignup = () => {
               class="bg-[#eeeeee] mb-7 rounded px-4 py-2 border  w-full text-lg placeholder:text-sm" type="password"
               placeholder='Enter Your password'
             />
-            <button class="bg-black text-white mb-7 rounded px-4 py-2 border  w-full text-lg placeholder:text-base">Login</button>
+            <button class="bg-black text-white mb-7 rounded px-4 py-2 border  w-full text-lg placeholder:text-base">Create Account</button>
 
           </form>
           <p class="text-center">Already Have Account? <Link to="/login" class="text-blue-600">Login</Link> </p>

@@ -1,6 +1,9 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React , {navigator} from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
+import axios from "axios";
+import {UserDataContext} from '../contexts/UserContext.jsx';
+
 
 const UserSignup = () => {
   const [email, setEmail] = useState("");
@@ -9,24 +12,40 @@ const UserSignup = () => {
   const [firstname, setFirstname] = useState("");
   const [lastname, setLastname] = useState("");
   
+  const navigate = useNavigate();
 
-  const submitHandler =(e) => {
+  const {user , setUser} = React.useContext(UserDataContext);
+
+
+  const submitHandler = async (e) => {
     e.preventDefault();
-    // console.log(email , password);
-    setUserData({
-      username : {
+    const newUser = {
+      fullname : {
         firstname : firstname,
         lastname : lastname
       },
       email : email,
       password : password
-    })
-    console.log(userData);
+    }
 
-    setEmail(" ");
-    setPassword(" ");
-    setFirstname(" ");
-    setLastname(" ");
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/register`, newUser);
+
+      if(response.status === 201){
+        const data = response.data
+
+        setUser(data.user)
+
+        navigate("/home")
+      }
+    } catch (error) {
+      console.error(error);
+    }
+
+    setEmail("");
+    setPassword("");
+    setFirstname("");
+    setLastname("");
   }
 
   return (
@@ -75,15 +94,15 @@ const UserSignup = () => {
       required
       value={password}
       onChange={(e) => {
-        setPassword(e.target.password)
+        setPassword(e.target.value)
       }}
       class = "bg-[#eeeeee] mb-7 rounded px-4 py-2 border  w-full text-lg placeholder:text-sm" type="password"
       placeholder='Enter Your password'
       />
-      <button class = "bg-black text-white mb-7 rounded px-4 py-2 border  w-full text-lg placeholder:text-base">Login</button>
+      <button class = "bg-black text-white mb-7 rounded px-4 py-2 border  w-full text-lg placeholder:text-base">Create Account</button>
 
     </form>
-    <p class ="text-center">Already Have Account? <Link to= "/login" class = "text-blue-600">Login</Link> </p>
+    <p class ="text-center">Already Have Account? <Link to= "/login" class = "text-blue-600">Create Captain's Account</Link> </p>
     </div>
     <div>
     <p class = "text-[7px] leading-tight text-center">By proceeding you consent to get messages, including by automated means , from uber and its affiliates to the mail provided</p>

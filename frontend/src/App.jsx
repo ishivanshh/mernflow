@@ -1,5 +1,6 @@
 import React , { useState } from 'react'
 import {Route , Routes} from "react-router-dom";
+import Star from "./pages/Start.jsx";
 import Home from "./pages/Home.jsx";
 import UserLogin from "./pages/UserLogin.jsx";
 import UserSignup from "./pages/UserSignup.jsx";
@@ -11,7 +12,8 @@ const App = () => {
   return (
     <div>
       <Routes>
-        <Route path= "/" element = { <Home/>} />
+        <Route path= "/" element = { <Star/>} />
+        <Route path= "/home" element = {<Home/>}/>
         <Route path= "/login" element = { <UserLogin/>} />
         <Route path= "/signup" element = { <UserSignup/>} />
         <Route path= "/captain-login" element = { <CaptainLogin/>} />
