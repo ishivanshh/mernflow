@@ -1,9 +1,8 @@
-import React , {navigator} from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { useState } from 'react'
+import React, { navigator } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import axios from "axios";
-import {UserDataContext} from '../contexts/UserContext.jsx';
-
+import { UserDataContext } from "../contexts/UserContext.jsx";
 
 const UserSignup = () => {
   const [email, setEmail] = useState("");
@@ -11,104 +10,125 @@ const UserSignup = () => {
   const [userData, setUserData] = useState({});
   const [firstname, setFirstname] = useState("");
   const [lastname, setLastname] = useState("");
-  
+
   const navigate = useNavigate();
 
-  const {user , setUser} = React.useContext(UserDataContext);
-
+  const { user, setUser } = React.useContext(UserDataContext);
 
   const submitHandler = async (e) => {
     e.preventDefault();
     const newUser = {
-      fullname : {
-        firstname : firstname,
-        lastname : lastname
+      fullname: {
+        firstname: firstname,
+        lastname: lastname,
       },
-      email : email,
-      password : password
-    }
+      email: email,
+      password: password,
+    };
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/register`, newUser);
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/users/register`,
+        newUser,
+      );
 
-      if(response.status === 201){
-        const data = response.data
-
-        setUser(data.user)
-
-        navigate("/home")
+      if (response.status === 201) {
+        setUser(response.data.user);
+        localStorage.setItem("token", data.token)
+        navigate("/home");
       }
     } catch (error) {
-      console.error(error);
+      console.log("Status:", error.response?.status);
+      console.log("Data:", error.response?.data);
+      console.log("Sent Data:", newUser);
     }
 
     setEmail("");
     setPassword("");
     setFirstname("");
     setLastname("");
-  }
+  };
 
   return (
-    <div class = "p-7 h-screen flex flex-col justify-between">
-    <div>
-    <img class = "w-16 mb-10" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbEzKW4r4SmPFZ9NLQgincQ_Z2XBHD70su6Q&s" alt="logo" />
-    <form onSubmit={(e)=>{
-      submitHandler(e)
-    }}>
-      <h3 class='text-xl font-base mb-2'>What's Your Name</h3>
-      <div class= "flex gap-4 mb-5">
-      <input 
-      required
-      value={firstname}
-      onChange={(e) => {
-        setFirstname(e.target.value)
-      }}
-      class = "bg-[#eeeeee]  rounded px-4 py-2 border  w-1/2 text-base placeholder:text-sm" type="text" 
-      placeholder='Enter Your First Name' 
-      />
-      <input 
-      required
-      value={lastname}
-      onChange={(e) => {
-        setLastname(e.target.value)
-      }}
-      class = "bg-[#eeeeee]  rounded px-4 py-2 border  w-1/2 text-lg placeholder:text-sm" type="text" 
-      placeholder='Enter Your Last Name' 
-      />
+    <div class="p-7 h-screen flex flex-col justify-between">
+      <div>
+        <img
+          class="w-16 mb-10"
+          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbEzKW4r4SmPFZ9NLQgincQ_Z2XBHD70su6Q&s"
+          alt="logo"
+        />
+        <form
+          onSubmit={(e) => {
+            submitHandler(e);
+          }}
+        >
+          <h3 class="text-xl font-base mb-2">What's Your Name</h3>
+          <div class="flex gap-4 mb-5">
+            <input
+              required
+              value={firstname}
+              onChange={(e) => {
+                setFirstname(e.target.value);
+              }}
+              class="bg-[#eeeeee]  rounded px-4 py-2 border  w-1/2 text-base placeholder:text-sm"
+              type="text"
+              placeholder="Enter Your First Name"
+            />
+            <input
+              required
+              value={lastname}
+              onChange={(e) => {
+                setLastname(e.target.value);
+              }}
+              class="bg-[#eeeeee]  rounded px-4 py-2 border  w-1/2 text-lg placeholder:text-sm"
+              type="text"
+              placeholder="Enter Your Last Name"
+            />
+          </div>
+
+          <h3 class="text-xl font-base mb-2">Whats Your Email</h3>
+          <input
+            required
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+            }}
+            class="bg-[#eeeeee] mb-7 rounded px-4 py-2 border  w-full text-lg placeholder:text-sm"
+            type="email"
+            placeholder="email@example.com"
+          />
+
+          <h3 class="text-xl mb-2 font-base ">Enter Password</h3>
+
+          <input
+            required
+            value={password}
+            onChange={(e) => {
+              setPassword(e.target.value);
+            }}
+            class="bg-[#eeeeee] mb-7 rounded px-4 py-2 border  w-full text-lg placeholder:text-sm"
+            type="password"
+            placeholder="Enter Your password"
+          />
+          <button class="bg-black text-white mb-7 rounded px-4 py-2 border  w-full text-lg placeholder:text-base">
+            Create Account
+          </button>
+        </form>
+        <p class="text-center">
+          Already Have Account?{" "}
+          <Link to="/login" class="text-blue-600">
+            Create Captain's Account
+          </Link>{" "}
+        </p>
       </div>
-
-      <h3 class='text-xl font-base mb-2'>Whats Your Email</h3>
-      <input 
-      required 
-      value={email}
-      onChange={(e)=>{
-        setEmail(e.target.value)
-      }}
-      class = "bg-[#eeeeee] mb-7 rounded px-4 py-2 border  w-full text-lg placeholder:text-sm" type="email" 
-      placeholder='email@example.com' 
-      />
-
-      <h3 class= "text-xl mb-2 font-base ">Enter Password</h3>
-
-      <input 
-      required
-      value={password}
-      onChange={(e) => {
-        setPassword(e.target.value)
-      }}
-      class = "bg-[#eeeeee] mb-7 rounded px-4 py-2 border  w-full text-lg placeholder:text-sm" type="password"
-      placeholder='Enter Your password'
-      />
-      <button class = "bg-black text-white mb-7 rounded px-4 py-2 border  w-full text-lg placeholder:text-base">Create Account</button>
-
-    </form>
-    <p class ="text-center">Already Have Account? <Link to= "/login" class = "text-blue-600">Create Captain's Account</Link> </p>
+      <div>
+        <p class="text-[7px] leading-tight text-center">
+          By proceeding you consent to get messages, including by automated
+          means , from uber and its affiliates to the mail provided
+        </p>
+      </div>
     </div>
-    <div>
-    <p class = "text-[7px] leading-tight text-center">By proceeding you consent to get messages, including by automated means , from uber and its affiliates to the mail provided</p>
-    </div>
-  </div>
-  )
-}
+  );
+};
 
-export default UserSignup
+export default UserSignup;

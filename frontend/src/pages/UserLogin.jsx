@@ -1,24 +1,53 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
+import { UserDataContext } from '../contexts/UserContext.jsx';
+import { useNavigate } from 'react-router-dom';
+import axios from "axios";
+
 
 const UserLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [userData, setUserData] = useState({});
 
-  const submitHandler =(e) => {
-    e.preventDefault();
-    // console.log(email , password);
-    setUserData({
-      email : email,
-      password : password
-    })
-    console.log(userData);
+
+  const { user , setUser } = useContext(UserDataContext);
+  const navigate = useNavigate()
+
+  const submitHandler = async (e) => {
+  e.preventDefault();
+  
+  console.log("password state: ", password);
+
+  const userData = {
+    email,
+    password,
+  };
+  // console.log(userData);
+
+  try {
+    const response = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/users/login`,
+      userData
+    );
+
+    console.log(response.data);
+
+    if (response.status === 200) {
+      const data = response.data
+      setUser(data.user)
+      localStorage.setItem("token", data.token)
+      navigate("/home");
+    }
+  } catch (error) {
+    console.log(error.response?.status);
+    console.log(error.response?.data);
+  }
 
     setEmail(" ");
     setPassword(" ");
-  }
+  };
 
   return (
   
@@ -43,11 +72,13 @@ const UserLogin = () => {
 
         <input 
         required
+        type="password"
         value={password}
         onChange={(e) => {
-          setPassword(e.target.password)
+          // console.log(e.target.value);
+          setPassword(e.target.value)
         }}
-        class = "bg-[#eeeeee] mb-7 rounded px-4 py-2 border  w-full text-lg placeholder:text-base" type="password"
+        class = "bg-[#eeeeee] mb-7 rounded px-4 py-2 border  w-full text-lg placeholder:text-base" 
         placeholder='Enter Your password'
         />
         <button class = "bg-black text-white mb-7 rounded px-4 py-2 border  w-full text-lg placeholder:text-base">Login</button>
