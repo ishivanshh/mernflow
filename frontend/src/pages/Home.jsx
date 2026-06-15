@@ -2,23 +2,40 @@ import React, { useRef , useState } from 'react'
 import firstMeetImage from '../assets/firstmeet.png'
 import {useGSAP} from '@gsap/react';
 import gsap from "gsap";
+import 'remixicon/fonts/remixicon.css';
+import LocationSearchPanel from "../components/LocationSearchPanel.jsx"
+
 
 const Home = () => {
   const [pickup, setpickup] = useState("");
   const [destination, setDestination] = useState("");
   const [panelOpen, setPanelOpen] = useState(false);
   const panelRef = useRef(null);
-
+  const panelCloseRef = useRef(null);
+  
   const submitHandler = (e) => {
     e.preventDefault();
 
   }
-  useGSAP(() => {
-    gsap.to(panelRef.current, {
-      height: panelOpen ? "75%" : "0%",
-    })
-  }, { dependencies: [panelOpen] })
-
+  useGSAP(function () {
+    if(panelOpen){
+      gsap.to(panelRef.current , {
+        height : "75%",
+        padding : 25
+      })
+      gsap.to(panelCloseRef.current, {
+        opacity : 1
+      })
+    } else {
+       gsap.to(panelRef.current , {
+        height : "0%",
+        padding : 0
+      })
+      gsap.to(panelCloseRef.current, {
+        opacity : 0
+      })
+    }
+  }, [panelOpen])
 
   return (
     <div class="h-screen relative">
@@ -28,6 +45,11 @@ const Home = () => {
         </div>
         <div class =" flex flex-col justify-end h-screen absolute top-0 w-full">
           <div class ="h-[25%] p-5 bg-white relative">
+          <h5 ref = {panelCloseRef} onClick={()=>{
+            setPanelOpen(false)
+          }}  class ="absolute opacity-0 right-6 top-6 text-2xl">
+            <i class="ri-arrow-down-wide-line"></i>
+          </h5>
             <h4 class="text-3xl font-semibold text-center"> Find a trip</h4>
           <form onSubmit={(e) => {
             submitHandler(e)
@@ -56,7 +78,8 @@ const Home = () => {
             class="bg-[#eee] px-12 py-2 text-lg w-full mt-4" type="text" placeholder='Enter Your Drop Location'/>
           </form>
           </div>
-          <div ref ={panelRef} class="bg-red-500 h-[0%]">
+          <div ref ={panelRef} class="bg-gray-500 h-[0%]">
+            <LocationSearchPanel/>
           </div>
         </div>
     </div>
