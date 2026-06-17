@@ -10,14 +10,13 @@ const LocationSearchPanel = (props) => {
   return (
     <div>
        {
-        locations.map(function(elem){
-          return  <div  onClick = {() => (
-            props.setVehiclePanel(true),
-            props.setPanelOpen(false)
-          )}class = "flex gap-4 border-2 p-3 border-gray-100 active:border-black rounded-xl items-center my-4 justify-center ">
-            <h2 class = "h-8 flex items-center justify-center w-12" rounded-full><i class="ri-map-pin-2-fill h-10+
-            "></i></h2>
-            <h5 class = "bg-[#eee] font-medium  ">{elem}</h5>
+        locations.map(function(elem , idx){
+          return  <div key={idx} onClick={() => {
+            props.setVehiclePanel(true);
+            props.setPanelOpen(false);
+          }} className="flex gap-4 border-2 p-3 border-gray-100 active:border-black rounded-xl items-center my-4 justify-center ">
+            <h2 className="h-8 flex items-center justify-center w-12 rounded-full"><i className="ri-map-pin-2-fill h-10"></i></h2>
+            <h5 className="bg-[#eee] font-medium">{elem}</h5>
         </div>
         })
        }
