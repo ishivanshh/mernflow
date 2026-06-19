@@ -9,7 +9,7 @@ import {
 const  WaitingForDriver = (props) => {
   return (
     <div><h5
-        onClick={() => props.setConfirmRidePanel(false)}
+        onClick={() => props.WaitingForDriver(false)}
         class="text-center text-2xl w-100% absolute p-1 top-0 mx-55">
         <i class="ri-arrow-down-wide-fill text-black-300"></i>
       </h5>
@@ -61,7 +61,7 @@ const  WaitingForDriver = (props) => {
           <div className="flex items-center gap-3">
 
             <img
-              src="https://images.unsplash.com/photo-1500648767791-00dcc994a43"
+              src=""
               alt="Driver"
               className="w-14 h-14 rounded-full object-cover"
             />

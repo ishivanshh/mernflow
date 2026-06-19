@@ -50,27 +50,35 @@ const captainSignup = () => {
         // If using CaptainContext
         // setCaptain(data.captain);
 
+        setEmail("");
+        setPassword("");
+        setFirstname("");
+        setLastname("");
+        setVehicleCapacity("");
+        setVehicleColor("");
+        setVehicleType("");
+        setVehiclePlate("");
+
         navigate("/captain-home");
       }
     } catch (error) {
-      console.log("Status:", error.response?.status);
+      const status = error.response?.status;
+      const data = error.response?.data;
 
-      error.response?.data?.errors?.forEach((err) => {
-        console.log("Field:", err.path, "Message:", err.msg);
-      });
+      console.log("Status:", status);
+      console.log("Response data:", data);
+
+      if (status === 409) {
+        console.warn("Signup conflict: captain email already exists.");
+      } else if (Array.isArray(data?.errors)) {
+        data.errors.forEach((err) => {
+          console.log("Field:", err.path, "Message:", err.msg);
+        });
+      }
     }
 
     //console.log(userData);
     //console.log(error.response.data.errors);
-
-    setEmail("");
-    setPassword("");
-    setFirstname("");
-    setLastname("");
-    setVehicleCapacity("");
-    setVehicleColor("");
-    setVehicleType("");
-    setVehiclePlate("");
   };
 
   return (
