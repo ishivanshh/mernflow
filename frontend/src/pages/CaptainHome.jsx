@@ -1,9 +1,31 @@
-import React from "react";
+import React, { useRef , useState } from "react";
 import firstMeetImage from "../assets/firstmeet.png";
 import CaptainDetails from "../components/CaptainDetails";
 import RidePopUp from "../components/RidePopUp";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+
 
 const CaptainHome = () => {
+  const [ridePopupPanel, setRidePopupPanel] = useState(true);
+
+  const ridePopupPanelRef = useRef(null);
+
+  useGSAP(
+    function () {
+      if (ridePopupPanel) {
+        gsap.to(ridePopupPanelRef.current, {
+          transform: "translateY(0)",
+        });
+      } else {
+        gsap.to(ridePopupPanelRef.current, {
+          transform: "translateY(100%)",
+        });
+      }
+    },
+    [ridePopupPanel],
+  );
+
   return (
     <div className="h-screen bg-white">
 
@@ -27,8 +49,9 @@ const CaptainHome = () => {
       <div className="h-1/3 bg-white rounded-2xl p-5 shadow-lg">
       <CaptainDetails/>
       </div>
-      <div class="fixed z-10 bottom-0 bg-white px-3 py-10 pt-12 w-full">
-       <RidePopUp/>
+      <div ref ={ridePopupPanelRef}
+       class="fixed z-10 bottom-0 bg-white px-3 translate-y-full py-10 pt-12 w-full">
+       <RidePopUp setRidePopupPanel = {setRidePopupPanel} />
       </div>
     </div>
   );
