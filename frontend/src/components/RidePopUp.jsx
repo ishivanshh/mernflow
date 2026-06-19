@@ -44,9 +44,8 @@ const RidePopUp = (props) => {
             </div>
          </div>
          <button onClick = {() => {
-            props.setVehicleFound(true)
-            props.setConfirmRidePanel(false)
-         }}   class ="w-full mt-5 bg-green-500 text-black font-semibold rounded-lgp p-2">Confirm</button>
+          props.setConfirmRidePopup(true)
+         }}   class ="w-full mt-5 bg-green-500 text-black font-semibold rounded-lgp p-2">Accept</button>
          <button onClick={() => {
           props.setRidePopupPanel(false)
          }} 
