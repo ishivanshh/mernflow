@@ -1,8 +1,8 @@
 import React from "react";
-import firstMeetImage from "../assets/firstmeet.png";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { useState, useRef } from "react";
+import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import FinishRide from "../components/FinishRide.jsx";
 
 const CaptainRiding = () => {
@@ -37,11 +37,16 @@ const CaptainRiding = () => {
 
       {/* Map Section */}
       <div className="h-4/5">
-        <img
-          className="h-full w-full object-cover"
-          src={firstMeetImage}
-          alt="Map"
-        />
+        <MapContainer
+          center={[28.6139, 77.2090]}
+          zoom={13}
+          className="h-full w-full"
+        >
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          <Marker position={[28.6139, 77.2090]} />
+        </MapContainer>
       </div>
       <div onClick={() => {
         setFinishRidePanel(true)
