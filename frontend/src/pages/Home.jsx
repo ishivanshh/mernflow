@@ -1,5 +1,4 @@
-import React, { useRef, useState } from "react";
-import firstMeetImage from "../assets/firstmeet.png";
+import { useRef, useEffect, useState } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import "remixicon/fonts/remixicon.css";
@@ -8,26 +7,151 @@ import VehiclePanel from "../components/VehiclePanel.jsx";
 import ConfirmRide from "../components/ConfirmRide.jsx";
 import LookingForDriver from "../components/LookingForDriver.jsx";
 import WaitingForDriver from "../components/WaitingForDriver.jsx";
+import axios from "axios";
+import {
+  CircleMarker,
+  MapContainer,
+  Popup,
+  TileLayer,
+  useMap,
+} from "react-leaflet";
+import "leaflet/dist/leaflet.css";
 
+const fallbackPosition = [28.6139, 77.209];
 
+// Keeps the Leaflet map centered whenever the browser reports a new position.
+const RecenterMap = ({ position }) => {
+  const map = useMap();
+
+  // Moves the existing map instance instead of recreating it after GPS updates.
+  useEffect(() => {
+    if (position) {
+      map.setView(position, 16);
+    }
+  }, [map, position]);
+
+  return null;
+};
+
+// Renders the rider home screen and coordinates the location and ride panels.
 const Home = () => {
   const [pickup, setPickup] = useState("");
   const [destination, setDestination] = useState("");
+  const [pickupSelected, setPickupSelected] = useState(false);
+  const [destinationSelected, setDestinationSelected] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
   const panelRef = useRef(null);
   const vehicleFoundRef = useRef(null);
   const confirmRidePanelRef = useRef(null);
   const vehichlePanelRef = useRef(null);
-  const panelCloseRef = useRef(null);   
+  const panelCloseRef = useRef(null);
   const waitingForDriverRef = useRef(null);
   const [vehiclePanel, setVehiclePanel] = useState(false);
   const [confirmRidePanel, setConfirmRidePanel] = useState(false);
-  const [vehicleFound , setVehicleFound] = useState(false);
-  const [waitingForDriver, setWaitingForDriver] = useState(false);
+  const [vehicleFound, setVehicleFound] = useState(false);
+  const [waitingForDriver] = useState(false);
 
+  const [pickupSuggestion, setPickupSuggestion] = useState([]);
+  const [destinationSuggestion, setDestinationSuggestion] = useState([]);
+  const [activeField, setActiveField] = useState(null);
+  const [currentPosition, setCurrentPosition] = useState(null);
+  const [locationError, setLocationError] = useState(() =>
+    navigator.geolocation
+      ? ""
+      : "Geolocation is not supported by this browser.",
+  );
+
+  // Updates the pickup text and fetches matching location suggestions.
+  const handlePickupChange = async (e) => {
+    const value = e.target.value;
+    setPickup(value);
+    setPickupSelected(false);
+
+    if (value.trim().length < 2) {
+      setPickupSuggestion([]);
+      return;
+    }
+
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/maps/get-suggestions`,
+        {
+          params: { input: value },
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        },
+      );
+
+      setPickupSuggestion(
+        Array.isArray(response.data?.data) ? response.data.data : [],
+      );
+    } catch (error) {
+      console.error(error);
+      setPickupSuggestion([]);
+    }
+  };
+
+  // Updates the destination text and fetches matching location suggestions.
+  const handleDestinationChange = async (e) => {
+    const value = e.target.value;
+    setDestination(value);
+    setDestinationSelected(false);
+
+    if (value.trim().length < 2) {
+      setDestinationSuggestion([]);
+      return;
+    }
+
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/maps/get-suggestions`,
+        {
+          params: { input: value },
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        },
+      );
+
+      setDestinationSuggestion(
+        Array.isArray(response.data?.data) ? response.data.data : [],
+      );
+    } catch (error) {
+      console.error(error);
+      setDestinationSuggestion([]);
+    }
+  };
+
+  // Applies a selected suggestion to whichever location field is active.
+  const handleLocationSelect = (location) => {
+    if (activeField === "pickup") {
+      setPickup(location.name);
+      setPickupSelected(true);
+      setPickupSuggestion([]);
+      setActiveField("destination");
+      return;
+    }
+
+    setDestination(location.name);
+    setDestinationSelected(true);
+    setDestinationSuggestion([]);
+  };
+
+  // Closes location search and opens vehicle selection when both places are set.
+  const handleFindTrip = () => {
+    if (!pickupSelected || !destinationSelected) return;
+
+    setPanelOpen(false);
+    setVehiclePanel(true);
+  };
+
+  // Prevents the location form from refreshing the page when submitted.
   const submitHandler = (e) => {
     e.preventDefault();
   };
+
+  // Animates the location suggestions panel when it opens or closes.
   useGSAP(
     function () {
       if (panelOpen) {
@@ -51,6 +175,7 @@ const Home = () => {
     [panelOpen],
   );
 
+  // Slides the vehicle selection panel into or out of view.
   useGSAP(
     function () {
       if (vehiclePanel) {
@@ -66,20 +191,23 @@ const Home = () => {
     [vehiclePanel],
   );
 
+  // Slides the ride confirmation panel into or out of view.
   useGSAP(
-    function(){
-      if(confirmRidePanel){
+    function () {
+      if (confirmRidePanel) {
         gsap.to(confirmRidePanelRef.current, {
-          transform : 'translateY(0)'
-        })
+          transform: "translateY(0)",
+        });
       } else {
-        gsap.to(confirmRidePanelRef.current , {
-          transform : 'translateY(100%)'
-        })
+        gsap.to(confirmRidePanelRef.current, {
+          transform: "translateY(100%)",
+        });
       }
-    }, [confirmRidePanel]
+    },
+    [confirmRidePanel],
   );
 
+  // Slides the driver-search panel into or out of view.
   useGSAP(
     function () {
       if (vehicleFound) {
@@ -94,6 +222,8 @@ const Home = () => {
     },
     [vehicleFound],
   );
+
+  // Slides the waiting-for-driver panel into or out of view.
   useGSAP(
     function () {
       if (waitingForDriver) {
@@ -109,23 +239,70 @@ const Home = () => {
     [waitingForDriver],
   );
 
+  // Watches the browser's geolocation and keeps the current position updated.
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      return undefined;
+    }
+
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        setCurrentPosition([
+          position.coords.latitude,
+          position.coords.longitude,
+        ]);
+        setLocationError("");
+      },
+      (error) => {
+        setLocationError(error.message || "Unable to access your location.");
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 5000,
+      },
+    );
+
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, []);
 
   return (
-    <div class="h-screen relative overflow-hidden">
-      <img
-        class="w-16 absolute left-5 top-7"
-        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbEzKW4r4SmPFZ9NLQgincQ_Z2XBHD70su6Q&s"
-        alt="logo"
-      />
-      <div class="h-screen w-screen">
-        <img
-          class="h-full w-full object-cover"
-          src={firstMeetImage}
-          alt="First meet"
+    <div className="h-screen w-screen">
+      <MapContainer
+        center={currentPosition ?? fallbackPosition}
+        zoom={16}
+        style={{
+          height: "100%",
+          width: "100%",
+        }}
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-      </div>
-      <div class=" flex flex-col justify-end h-screen absolute top-0 w-full">
-        <div class="h-[25%] p-5 bg-white relative">
+        <RecenterMap position={currentPosition} />
+        {currentPosition && (
+          <CircleMarker
+            center={currentPosition}
+            radius={9}
+            pathOptions={{
+              color: "white",
+              fillColor: "#2563eb",
+              fillOpacity: 1,
+              weight: 3,
+            }}
+          >
+            <Popup>Your current location</Popup>
+          </CircleMarker>
+        )}
+      </MapContainer>
+      {locationError && (
+        <p className="absolute left-1/2 top-4 z-[1000] -translate-x-1/2 rounded-lg bg-white px-4 py-2 text-sm shadow">
+          {locationError}
+        </p>
+      )}
+      <div className="absolute top-0 z-[500] flex h-screen w-full flex-col justify-end pointer-events-none">
+        <div className="relative h-[25%] bg-white p-5 pointer-events-auto">
           <h5
             ref={panelCloseRef}
             onClick={() => {
@@ -135,7 +312,10 @@ const Home = () => {
           >
             <i class="ri-arrow-down-wide-line"></i>
           </h5>
-          <h4 class="text-36+xl font-semibold text-center"> Plan Your Journey </h4>
+          <h4 class="text-36+xl font-semibold text-center">
+            {" "}
+            Plan Your Journey{" "}
+          </h4>
           <form
             onSubmit={(e) => {
               submitHandler(e);
@@ -143,55 +323,78 @@ const Home = () => {
           >
             <div class="line absolute h-18 w-1.5 top-23 left-10 bg-gray-900 rounded-full"></div>
             <input
+              value={pickup}
+              onChange={handlePickupChange}
               onClick={() => {
                 setPanelOpen(true);
+                setActiveField("pickup");
               }}
-              value={pickup}
-              onChange={(e) => {
-                setPickup(e.target.value);
-              }}
-              class="bg-[#eee] px-12 py-2 text-lg mt-5 w-full"
+              className="bg-[#eee] px-12 py-2 text-lg mt-5 w-full"
               type="text"
               placeholder="Add a pick-up location"
             />
             <input
               value={destination}
-              onChange={(e) => {
-                setDestination(e.target.value);
-              }}
+              onChange={handleDestinationChange}
               onClick={() => {
                 setPanelOpen(true);
+                setActiveField("destination");
               }}
-              class="bg-[#eee] px-12 py-2 text-lg w-full mt-4"
+              className="bg-[#eee] px-12 py-2 text-lg w-full mt-4"
               type="text"
               placeholder="Enter Your Drop Location"
             />
+            {destinationSelected && (
+              <button
+                type="button"
+                onClick={handleFindTrip}
+                className="mt-3 w-full rounded-lg bg-black px-4 py-2.5 font-semibold text-white disabled:cursor-not-allowed disabled:bg-gray-400"
+              >
+                Find Trip
+              </button>
+            )}
           </form>
         </div>
-        <div ref={panelRef} class="bg-gray-100 h-[0%]">
+        <div ref={panelRef} className="h-[0%] bg-gray-100 pointer-events-auto">
           <LocationSearchPanel
-            setPanelOpen={setPanelOpen}
-            setVehiclePanel={setVehiclePanel}
+            suggestions={
+              activeField === "pickup"
+                ? pickupSuggestion
+                : destinationSuggestion
+            }
+            onLocationSelect={handleLocationSelect}
           />
         </div>
       </div>
       <div
         ref={vehichlePanelRef}
-        class="fixed z-10 bottom-0  translate-y-full bg-white px-3 py-10 pt-12 w-full">
-       <VehiclePanel setConfirmRidePanel = {setConfirmRidePanel} setVehiclePanel = {setVehiclePanel }/>
+        className="fixed bottom-0 z-[1100] w-full translate-y-full bg-white px-3 py-10 pt-12"
+      >
+        <VehiclePanel
+          setConfirmRidePanel={setConfirmRidePanel}
+          setVehiclePanel={setVehiclePanel}
+        />
       </div>
       <div
         ref={confirmRidePanelRef}
-        class="fixed z-10 bottom-0  translate-y-full bg-white px-3 py-10 pt-12 w-full">
-       <ConfirmRide setConfirmRidePanel ={setConfirmRidePanel} setVehicleFound={setVehicleFound}/>
+        className="fixed bottom-0 z-[1100] w-full translate-y-full bg-white px-3 py-10 pt-12"
+      >
+        <ConfirmRide
+          setConfirmRidePanel={setConfirmRidePanel}
+          setVehicleFound={setVehicleFound}
+        />
       </div>
-      <div ref = {vehicleFoundRef}
-        class="fixed z-10 bottom-0  translate-y-full bg-white px-3 py-10 pt-12 w-full">
-       <LookingForDriver setVehicleFound = {setVehicleFound} />
+      <div
+        ref={vehicleFoundRef}
+        className="fixed bottom-0 z-[1100] w-full translate-y-full bg-white px-3 py-10 pt-12"
+      >
+        <LookingForDriver setVehicleFound={setVehicleFound} />
       </div>
-      <div red = {waitingForDriverRef}
-        class="fixed z-10 bottom-0 bg-white px-3 translate-y-full  py-10 pt-12 w-full">
-       <WaitingForDriver waitingForDriver = {waitingForDriver} />
+      <div
+        ref={waitingForDriverRef}
+        className="fixed bottom-0 z-[1100] w-full translate-y-full bg-white px-3 py-10 pt-12"
+      >
+        <WaitingForDriver waitingForDriver={waitingForDriver} />
       </div>
     </div>
   );
