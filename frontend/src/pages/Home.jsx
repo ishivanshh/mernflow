@@ -16,6 +16,10 @@ import {
   useMap,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import SocketContext from "../contexts/SocketContext.jsx";
+import { UserDataContext } from "../contexts/UserContext.jsx";
+import { useContext } from "react";
+
 
 const fallbackPosition = [28.6139, 77.209];
 
@@ -60,6 +64,18 @@ const Home = () => {
       ? ""
       : "Geolocation is not supported by this browser.",
   );
+  const [fare, setFare] = useState({});
+  const [vehicleType, setVehicleType] = useState(null); 
+  const {user} = useContext(UserDataContext);
+  const {receiveMessage, sendMessage} = useContext(SocketContext);
+
+  useEffect(() => {
+    console.log(user)
+    // Only send join when we have a valid user id
+    if (user && user._id && typeof sendMessage === "function") {
+      sendMessage("join", { userType: "user", userId: user._id });
+    }
+  }, [user]);
 
   // Updates the pickup text and fetches matching location suggestions.
   const handlePickupChange = async (e) => {
@@ -139,12 +155,29 @@ const Home = () => {
   };
 
   // Closes location search and opens vehicle selection when both places are set.
-  const handleFindTrip = () => {
+  async function handleFindTrip() {
     if (!pickupSelected || !destinationSelected) return;
 
     setPanelOpen(false);
     setVehiclePanel(true);
-  };
+
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/rides/get-fare`,
+        {
+          params: { pickup, destination },
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        },
+      );
+
+      setFare(response.data);
+    } catch (error) {
+      console.error("Unable to calculate fare:", error);
+      setFare({});
+    }
+  }
 
   // Prevents the location form from refreshing the page when submitted.
   const submitHandler = (e) => {
@@ -266,6 +299,20 @@ const Home = () => {
     return () => navigator.geolocation.clearWatch(watchId);
   }, []);
 
+  async function createRide() {
+    const response = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/rides/create`,
+      { pickup, destination, vehicleType },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      },
+    );
+
+    console.log(response.data);
+  }
+
   return (
     <div className="h-screen w-screen">
       <MapContainer
@@ -371,24 +418,40 @@ const Home = () => {
         className="fixed bottom-0 z-[1100] w-full translate-y-full bg-white px-3 py-10 pt-12"
       >
         <VehiclePanel
+          fare={fare}
+          selectVehicle={setVehicleType}
           setConfirmRidePanel={setConfirmRidePanel}
           setVehiclePanel={setVehiclePanel}
         />
       </div>
       <div
         ref={confirmRidePanelRef}
+        fare={fare}
+        createRide={createRide}
         className="fixed bottom-0 z-[1100] w-full translate-y-full bg-white px-3 py-10 pt-12"
       >
         <ConfirmRide
+        createRide={createRide}
+        pickup={pickup}
+        destination={destination}
+        fare={fare}
+        vehicleType={vehicleType}
           setConfirmRidePanel={setConfirmRidePanel}
           setVehicleFound={setVehicleFound}
         />
       </div>
       <div
         ref={vehicleFoundRef}
+        
         className="fixed bottom-0 z-[1100] w-full translate-y-full bg-white px-3 py-10 pt-12"
       >
-        <LookingForDriver setVehicleFound={setVehicleFound} />
+        <LookingForDriver 
+        fare={fare}
+        pickup={pickup}
+        destination={destination}
+        vehicleType={vehicleType}
+        createRide={createRide}
+        setVehicleFound={setVehicleFound} />
       </div>
       <div
         ref={waitingForDriverRef}

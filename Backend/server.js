@@ -4,6 +4,9 @@ const app = require("./app");
 const basePort = Number(process.env.PORT) || 3000;
 const port = basePort;
 const server = http.createServer(app);
+const { initializeSocket } = require("./socket");
+
+initializeSocket(server);
 
 server.on("error", (error) => {
   if (error.code === "EADDRINUSE") {

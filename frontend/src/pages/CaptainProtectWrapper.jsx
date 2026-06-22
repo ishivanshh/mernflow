@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { CaptainDataContext } from "../contexts/CaptainContext.jsx";
@@ -8,7 +8,7 @@ const CaptainProtectWrapper = ({
 }) => {
     const token = localStorage.getItem("token")
     const navigate = useNavigate()
-    const { captain, setCaptain } = useContext(CaptainDataContext)
+    const { setCaptain } = useContext(CaptainDataContext)
     const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
@@ -24,7 +24,9 @@ const CaptainProtectWrapper = ({
         })
         .then((response) => {
             if (response.status === 200) {
-                setCaptain(response.data.captain)
+                // The profile endpoint returns the captain directly, while
+                // login returns it inside a `captain` property.
+                setCaptain(response.data.captain ?? response.data)
             }
         })
         .catch((err) => {

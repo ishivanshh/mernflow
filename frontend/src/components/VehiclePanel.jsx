@@ -1,5 +1,3 @@
-import React from "react";
-
 const VehiclePanel = (props) => {
   return (
     <div>
@@ -14,6 +12,7 @@ const VehiclePanel = (props) => {
       </h3>
       <div onClick={() => {
         props.setConfirmRidePanel(true)
+        props.selectVehicle('car')
         // props.setVehiclePanel(false)
       }} class="flex  hover:border-2 mt-4 rounded-xl w-full items-center justify-between">
         <img
@@ -31,10 +30,13 @@ const VehiclePanel = (props) => {
           <h6>2 mins away </h6>
           <p>Affordable , compact rides</p>
         </div>
-        <h2 class="text-xl p-2 font-semibold">$198.54</h2>
+        <h2 class="text-xl p-2 font-semibold">
+         ₹{props.fare.car}
+        </h2>
       </div>
       <div onClick={() => {
         props.setConfirmRidePanel(true)
+         props.selectVehicle('motorcycle')
       }}  class="flex mt-4 hover:border-2 rounded-xl w-full items-center justify-between">
         <img
           class="h-13"
@@ -51,10 +53,13 @@ const VehiclePanel = (props) => {
           <h6>5 mins away </h6>
           <p>Easy and Less price ride</p>
         </div>
-        <h2 class="text-xl p-2 font-semibold">$69.32</h2>
+        <h2 class="text-xl p-2 font-semibold">
+           ₹{props.fare.motorcycle}
+        </h2>
       </div>
       <div onClick={() => {
         props.setConfirmRidePanel(true)
+         props.selectVehicle('auto') 
       }}  class="flex hover:border-2 mt-4 rounded-xl w-full items-center justify-between">
         <img
           class="h-13"
@@ -71,7 +76,9 @@ const VehiclePanel = (props) => {
           <h6>10 mins away</h6>
           <p>Electirc , Fast and compact</p>
         </div>
-        <h2 class="text-xl p-2 font-semibold">$121.26</h2>
+        <h2 class="text-xl p-2 font-semibold">
+           ₹{props.fare.auto }
+        </h2>
       </div>
     </div>
   );
