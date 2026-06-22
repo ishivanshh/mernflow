@@ -1,17 +1,44 @@
 const express = require('express');
 const router = express.Router();
-const {body} = require("express-validator");
+const {check} = require("express-validator");
 const rideController = require("../controllers/ride.controller.js");
+const authMiddleware = require('../middlewares/auth.middleware.js');
 
 
-
-router.post('/create', 
-    body('userId').isString().isLength({ min : 24, max : 24}).withMessage("invalid user id"),
-    body('pickup').isString().isLength({ min : 3}).withMessage("invalid pickup address"),
-    body('destination').isString().isLength({ min : 3}).withMessage("invalid destination address"),
-    body('vehicleType').isString(),isIn(['auto', 'car' , 'motorcycle']).withMessage('invalid vehicle type'),
+router.post('/create',
+    authMiddleware.authUser,
+    check('pickup')
+      .exists({ checkNull: true, checkFalsy: true })
+      .withMessage('pickup is required')
+      .bail()
+      .isString()
+      .withMessage('pickup must be a string')
+      .bail()
+      .trim()
+      .isLength({ min: 3 })
+      .withMessage('invalid pickup address'),
+    check('destination')
+      .exists({ checkNull: true, checkFalsy: true })
+      .withMessage('destination is required')
+      .bail()
+      .isString()
+      .withMessage('destination must be a string')
+      .bail()
+      .trim()
+      .isLength({ min: 3 })
+      .withMessage('invalid destination address'),
+    check('vehicleType')
+      .exists({ checkNull: true, checkFalsy: true })
+      .withMessage('vehicleType is required')
+      .bail()
+      .isString()
+      .withMessage('vehicleType must be a string')
+      .bail()
+      .trim()
+      .isIn(['auto', 'car', 'motorcycle'])
+      .withMessage('invalid vehicle type'),
     rideController.createRide
-)
+);
 
 
 module.exports = router;

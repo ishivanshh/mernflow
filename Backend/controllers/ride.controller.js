@@ -7,10 +7,12 @@ module.exports.createRide = async( req , res ) => {
         return res.status(400).json({errors : errors.array() });
     }
 
-    const { userId , pickup, destination , vehicleType} = req.body;
+    const pickup = req.body.pickup || req.query.pickup;
+    const destination = req.body.destination || req.query.destination;
+    const vehicleType = req.body.vehicleType || req.query.vehicleType;
 
     try {
-        const ride = await rideService.createRide({user : userId, pickup , destination , vehicleType});
+        const ride = await rideService.createRide({ user: req.user._id, pickup, destination, vehicleType });
         return res.status(201).json(ride);
     } catch(err){
         return res.status(400).json({ message : err.message });
