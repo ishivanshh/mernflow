@@ -1,62 +1,49 @@
-import React, { createContext, useContext, useEffect, useRef } from "react";
-import { io } from "socket.io-client";
 
-const SocketContext = createContext(null);
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useEffect } from 'react';
+import { io } from 'socket.io-client';
 
-export const useSocket = () => useContext(SocketContext);
+export const SocketContext = createContext();
 
-const SOCKET_URL = import.meta.env.VITE_BASE_URL;
+const socket = io(`${import.meta.env.VITE_BASE_URL}`); // Replace with your server URL
 
 export const SocketProvider = ({ children }) => {
-  const socketRef = useRef(null);
+    useEffect(() => {
+        // Basic connection logic
+        const handleConnect = () => {
+            console.log('Connected to server');
+        };
 
-  useEffect(() => {
-    socketRef.current = io(SOCKET_URL, {
-      autoConnect: true,
-      transports: ["websocket", "polling"]
-    });
+        const handleDisconnect = () => {
+            console.log('Disconnected from server');
+        };
 
-    const s = socketRef.current;
-    s.on("connect", () => console.log("Socket connected:", s.id));
-    s.on("disconnect", (reason) => console.log("Socket disconnected:", reason));
-    s.on("connect_error", (err) => console.error("Socket connect_error:", err));
+        socket.on('connect', handleConnect);
+        socket.on('disconnect', handleDisconnect);
 
-    return () => {
-      if (s) {
-        s.off();
-        s.disconnect();
-      }
-    };
-  }, []);
+        return () => {
+            socket.off('connect', handleConnect);
+            socket.off('disconnect', handleDisconnect);
+        };
 
-  const sendMessage = (eventName, payload) => {
-    const s = socketRef.current;
-    if (!s) {
-      console.warn("Socket not initialized. Call initialize or wait for connection.");
-      return false;
-    }
-    s.emit(eventName, payload);
-    return true;
-  };
+    }, []);
 
-  const receiveMessage = (eventName, handler) => {
-    const s = socketRef.current;
-    if (!s) {
-      console.warn("Socket not initialized. Handler not attached.");
-      return () => {};
-    }
-    s.on(eventName, handler);
-    return () => s.off(eventName, handler);
-  };
 
-  const value = {
-    sendMessage,
-    receiveMessage,
-    getSocket: () => socketRef.current
-  };
 
-  return <SocketContext.Provider value={value}>{children}</SocketContext.Provider>;
+    return (
+        <SocketContext.Provider
+            value={{
+                socket,
+                sendMessage: (eventName, payload) => socket.emit(eventName, payload),
+                receiveMessage: (eventName, handler) => {
+                    socket.on(eventName, handler);
+                    return () => socket.off(eventName, handler);
+                },
+            }}
+        >
+            {children}
+        </SocketContext.Provider>
+    );
 };
 
-export default SocketContext;
- 
+export default SocketProvider;

@@ -1,52 +1,72 @@
-const  { Server } = require("socket.io");
-const userModel = require("../Backend/models/user.model.js");
-const captainModel = require("../Backend/models/captain.model.js");
+const socketIo = require('socket.io');
+const userModel = require('./models/user.model');
+const captainModel = require('./models/captain.model');
 
 let io;
 
 function initializeSocket(server) {
-  if (io) return io;
-
-  io = new Server(server, {
-    cors: {
-      origin: "*",
-      methods: ["GET", "POST"]
-    }
-  });
-
-  io.on("connection", (socket) => {
-    console.log("Socket connected:", socket.id);
-    
-      socket.on('join' , async(data) => {
-        const {userId , userType }= data;
-
-        if(userType === "user"){
-            await userModel.findByIdAndUpdate(userId, {
-                socketId: socket.id
-            });
-        } else if (userType === "captain"){
-            await (captainModel.findByIdAndUpdate(userId, {sockedId : socket.id}));
+    io = socketIo(server, {
+        cors: {
+            origin: '*',
+            methods: [ 'GET', 'POST' ]
         }
-      });
-  });
+    });
 
-  return io;
+    io.on('connection', (socket) => {
+        console.log(`Client connected: ${socket.id}`);
+
+        socket.on('join', async (data) => {
+            const { userId, userType } = data;
+
+            if (!userId || !userType) {
+                return socket.emit('error', { message: 'Invalid join data' });
+            }
+
+            if (userType === 'user') {
+                await userModel.findByIdAndUpdate(userId, { socketId: socket.id });
+                console.log(`User ${userId} joined with socketId ${socket.id}`);
+            } else if (userType === 'captain') {
+                await captainModel.findByIdAndUpdate(userId, { socketId: socket.id });
+                console.log(`Captain ${userId} joined with socketId ${socket.id}`);
+            } else {
+                socket.emit('error', { message: 'Invalid user type' });
+            }
+        });
+
+
+        socket.on('update-location-captain', async (data) => {
+            const { userId, location } = data;
+
+            if (!location || location.lat == null || location.lon == null) {
+                return socket.emit('error', { message: 'Invalid location data' });
+            }
+
+            await captainModel.findByIdAndUpdate(userId, {
+                location: {
+                    type: 'Point',
+                    coordinates: [location.lon, location.lat],
+                    lat: location.lat,
+                    lon: location.lon
+                }
+            });
+            console.log(`Captain ${userId} location updated:`, location);
+        });
+
+        socket.on('disconnect', () => {
+            console.log(`Client disconnected: ${socket.id}`);
+        });
+    });
 }
 
-function sendMessageSocketId(socketId, event, message) {
-  if (!io) throw new Error("Socket not initialized. Call initializeSocket(server) first.");
+const sendMessageToSocketId = (socketId, messageObject) => {
 
-  // socket.io v4 stores sockets in a Map; fallback for older versions
-  const target = io.sockets && io.sockets.sockets
-    ? (typeof io.sockets.sockets.get === "function" ? io.sockets.sockets.get(socketId) : io.sockets.sockets[socketId])
-    : null;
+console.log(messageObject);
 
-  if (target) {
-    target.emit(event, message);
-    return true;
-  }
-
-  return false;
+    if (io) {
+        io.to(socketId).emit(messageObject.event, messageObject.data);
+    } else {
+        console.log('Socket.io not initialized.');
+    }
 }
 
-module.exports = { initializeSocket, sendMessageSocketId };
+module.exports = { initializeSocket, sendMessageToSocketId };

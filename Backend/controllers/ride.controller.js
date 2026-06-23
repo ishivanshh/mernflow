@@ -1,21 +1,32 @@
 const rideService = require("../services/ride.services.js");
 const { validationResult } = require('express-validator');
+const mapService = require("../services/maps.service.js");
 
 module.exports.createRide = async( req , res ) => {
     const errors = validationResult(req);
     if(!errors.isEmpty()){
         return res.status(400).json({errors : errors.array() });
     }
-
+    const userId = req.body.userId;
     const pickup = req.body.pickup || req.query.pickup;
     const destination = req.body.destination || req.query.destination;
     const vehicleType = req.body.vehicleType || req.query.vehicleType;
 
     try {
         const ride = await rideService.createRide({ user: req.user._id, pickup, destination, vehicleType });
-        return res.status(201).json(ride);
-    } catch(err){
-        return res.status(400).json({ message : err.message });
+        res.status(201).json(ride);
+
+        // After creating the ride, gather additional data (coordinates and nearby captains).
+        // Do all async work first, then send a single response to avoid headers-sent errors.
+        const pickupCoordinates = await mapService.getAddressCoordinate(pickup);
+        console.log(pickupCoordinates);
+
+        const captainsInRadius = await mapService.getCaptainInTheRaidus(pickupCoordinates.lat, pickupCoordinates.lon, 2);
+        console.log(captainsInRadius);
+
+       
+    } catch (err) {
+        return res.status(400).json({ message: err.message });
     }
 };
 

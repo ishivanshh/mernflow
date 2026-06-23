@@ -1,4 +1,5 @@
 const axios = require("axios");
+const captainModel = require("../models/captain.model.js");
 
 module.exports.getAddressCoordinate = async (address) => {
   if (!address) {
@@ -160,4 +161,23 @@ module.exports.getSuggestions = async (input) => {
       "Failed to fetch suggestions"
     );
   }
+};
+
+module.exports.getCaptainInTheRaidus = async (lat , lon , raidus) => {
+  if (lat == null || lon == null || !raidus) {
+    throw new Error("Latitude, longitude and radius are required");
+  }
+
+  // radius in km
+  const captains = await captainModel.find({
+    location : {
+      $geoWithin : {
+        $centerSphere : [ [ lon , lat ] , raidus / 6371]
+      }
+    }
+  })
+    .select("_id fullname email socketId status vehicle location")
+    .lean();
+
+  return captains;
 };

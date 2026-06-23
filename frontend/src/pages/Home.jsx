@@ -16,7 +16,7 @@ import {
   useMap,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import SocketContext from "../contexts/SocketContext.jsx";
+import { SocketContext } from "../contexts/SocketContext.jsx";
 import { UserDataContext } from "../contexts/UserContext.jsx";
 import { useContext } from "react";
 
@@ -66,16 +66,16 @@ const Home = () => {
   );
   const [fare, setFare] = useState({});
   const [vehicleType, setVehicleType] = useState(null); 
-  const {user} = useContext(UserDataContext);
-  const {receiveMessage, sendMessage} = useContext(SocketContext);
+  const { user } = useContext(UserDataContext);
+  const {socket} = useContext(SocketContext);
 
   useEffect(() => {
     console.log(user)
     // Only send join when we have a valid user id
-    if (user && user._id && typeof sendMessage === "function") {
-      sendMessage("join", { userType: "user", userId: user._id });
+    if (socket && user?._id) {
+      socket.emit('join', { userType: "user", userId: user._id });
     }
-  }, [user]);
+  }, [socket, user]);
 
   // Updates the pickup text and fetches matching location suggestions.
   const handlePickupChange = async (e) => {

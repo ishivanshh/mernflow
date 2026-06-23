@@ -26,7 +26,7 @@ const captainSchema = new mongoose.Schema({
             required : true,
             select : false,
         },
-        sockedId : {
+        socketId : {
             type : String,
         },
         status :{
@@ -58,15 +58,24 @@ const captainSchema = new mongoose.Schema({
             }
         },
         location : {
+            type: {
+                type: String,
+                enum: ['Point'],
+            },
+            coordinates: {
+                type: [Number], // [lon, lat] for MongoDB geospatial queries
+            },
             lat: {
                 type : Number
             },
-            lng : {
+            lon : {
                 type : Number,
             }
         }
 
 });
+
+captainSchema.index({ location: '2dsphere' });
 
 
 
