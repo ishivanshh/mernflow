@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 
+
 const captainSchema = new mongoose.Schema({
     fullname : {
         firstname : {
@@ -63,7 +64,9 @@ const captainSchema = new mongoose.Schema({
                 enum: ['Point'],
             },
             coordinates: {
-                type: [Number], // [lon, lat] for MongoDB geospatial queries
+                type: [Number],
+                required : true
+                // [lon, lat] for MongoDB geospatial queries
             },
             lat: {
                 type : Number
@@ -76,7 +79,6 @@ const captainSchema = new mongoose.Schema({
 });
 
 captainSchema.index({ location: '2dsphere' });
-
 
 
 captainSchema.methods.generateAuthToken = function () {
