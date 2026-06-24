@@ -14,7 +14,7 @@ const RidePopUp = (props) => {
       <div class ="flex items-center justify-between p-3 bg-yellow-500 rounded-xl mt-4">
         <div class ="flex items-center gap-3">
             <img class ="h-15 w-15 object-fit rounded-full " src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTEouMzzrpU3iHAyGWzn_Ly8D7PwTLSF973sei9nCqgsQ&s=10" alt="" />
-            <h2 class ="text-xl">Shivansh Saxena</h2>
+            <h2 class ="text-xl">{props.ride?.fullname.firstname + " " + props.ride?.fullname.lastname }</h2>
         </div>
         <h5 class = "text-lg font-semibold">2.2Km</h5>
       </div>
@@ -24,21 +24,19 @@ const RidePopUp = (props) => {
             <div class="flex items-center gap-5 p-3 border-b-2 border-gray-400">
                 <i class="text-lg ri-map-pin-2-fill"></i>
             <div>
-                <h3 class="text-lg font-medium">Mamta Trader's</h3>
-                <p class="text-sm -mt-1 text-gray-700">Brij Bihar Colony, Shahjahanpur</p>
+                <p class="text-lg -mt-1 text-gray-700">{props.ride?.pickup}</p>
             </div>
             </div>
             <div class="flex items-center gap-5 p-3 border-b-2 border-gray-400">
                 <i class="text-lg ri-map-pin-user-fill"></i>
             <div>
-                <h3 class="text-lg font-medium">One 8 Resturant</h3>
-                <p class="text-sm -mt-1 text-gray-700">Hauz khas ,North Delhi</p>
+                <p class="text-sm -mt-1 text-gray-700">{props.ride?.destination}</p>
             </div>
             </div>
             <div class="flex items-center gap-5 p-3">
                 <i class="text-lg ri-wallet-2-fill"></i>
                 <div>
-                    <h3>$192.32</h3>
+                    <h3>{props.ride?.fare}</h3>
                     <p>Cash Cash</p>
                 </div>
             </div>

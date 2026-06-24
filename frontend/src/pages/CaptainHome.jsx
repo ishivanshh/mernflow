@@ -10,12 +10,12 @@ import { SocketContext } from "../contexts/SocketContext";
 import { CaptainDataContext } from "../contexts/CaptainContext";
 
 const CaptainHome = () => {
-  const [ridePopupPanel, setRidePopupPanel] = useState(true);
+  const [ridePopupPanel, setRidePopupPanel] = useState(false);
   const [confirmRidePopup, setConfirmRidePopup] = useState(false);
   const [locationError, setLocationError] = useState("");
   const confirmRidePopupRef = useRef(null);
   const ridePopupPanelRef = useRef(null);
-
+  const [ride, setride] = useState(null);
   const {socket} = useContext(SocketContext);
   const {captain} = useContext(CaptainDataContext);
 
@@ -70,7 +70,9 @@ const CaptainHome = () => {
   }, [socket, captain?._id]);
 
 
-  
+  socket.on('new-ride' , (data) => {
+    console.log(data)
+  });
 
   useGSAP(
     function () {
@@ -132,7 +134,10 @@ const CaptainHome = () => {
       </div>
       <div ref ={ridePopupPanelRef}
        class="fixed z-10 bottom-0 bg-white px-3 translate-y-full py-10 pt-12 w-full">
-       <RidePopUp setRidePopupPanel = {setRidePopupPanel} setConfirmRidePopup = {setConfirmRidePopup} />
+       <RidePopUp 
+       ride={ride}
+       setRidePopupPanel = {setRidePopupPanel} 
+       setConfirmRidePopup = {setConfirmRidePopup} />
       </div>
       <div ref = {confirmRidePopupRef}
        class="fixed z-10 bottom-0 bg-white px-3 py-10 translate-y-full pt-12 w-full">

@@ -1,6 +1,9 @@
 const rideService = require("../services/ride.services.js");
 const { validationResult } = require("express-validator");
 const mapService = require("../services/maps.service.js");
+const {sendMessageToSocketId} = require('../socket.js');
+const rideModels = require("../models/ride.models.js");
+
 
 module.exports.createRide = async (req, res) => {
   const errors = validationResult(req);
@@ -23,16 +26,26 @@ module.exports.createRide = async (req, res) => {
     // After creating the ride, gather additional data (coordinates and nearby captains).
     // Do all async work first, then send a single response to avoid headers-sent errors.
     const pickupCoordinates = await mapService.getAddressCoordinate(pickup);
-    // console.log(pickupCoordinates);
+
+    console.log("Pickup:", pickupCoordinates);
 
     const captainsInRadius = await mapService.getCaptainInTheRaidus(
       pickupCoordinates.lat,
       pickupCoordinates.lon,
       500,
     );
-    //console.log(captainsInRadius);
-    console.log("Nearby Captains:", captainsInRadius);
-    console.log("Pickup:", pickupCoordinates);
+
+    ride.otp = ""
+    const rideWithUser = await rideModels.findOne(ride._id).populate('user');
+
+    captainsInRadius.map(async captain => {
+      sendMessageToSocketId(captain.socketId, {
+        event : 'new-ride',
+        data : rideWithUser
+      })
+    });
+
+    
     // Emit socket event to captains here (example placeholder)
 
     return res.status(201).json({ ride, pickupCoordinates, captainsInRadius });
