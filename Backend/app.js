@@ -12,7 +12,13 @@ const mapsRoutes = require("./routes/maps.routes.js");
 const rideRoutes = require('./routes/ride.routes.js');
 
 //only for development phase we are accepting request from every website but at after it we will add domain of that website and will accept only that.
-app.use(cors());
+app.use(cors({
+    origin: [
+        "https://uber-three-pink.vercel.app",
+        "http://localhost:5173"
+    ],
+    credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
