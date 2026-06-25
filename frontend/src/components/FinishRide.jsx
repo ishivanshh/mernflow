@@ -1,6 +1,5 @@
-import React from "react";
 import axios from "axios";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 
 
@@ -49,20 +48,12 @@ const FinishRide = (props) => {
       <div className="p-5 flex items-center justify-between border-b">
 
         <div className="flex items-center gap-4">
-          <img
-            src="https://images.unsplash.com/photo-1500648767791-00dcc994a43"
-            alt="Passenger"
-            className="h-14 w-14 rounded-full object-cover"
-          />
+         {/* u can add image here  */}
 
           <div>
-            <h3 className="font-semibold text-lg">
+            <h3 className="font-semibold text-lg capitalize">
               {passengerName}
             </h3>
-
-            <p className="text-gray-500">
-              {passenger?.email ?? "Passenger"}
-            </p>
           </div>
         </div>
 
@@ -128,21 +119,6 @@ const FinishRide = (props) => {
 
               <p className="text-gray-600">
                 {props.ride?.distance ? `${props.ride.distance} km` : "Not available"}
-              </p>
-            </div>
-          </div>
-
-          {/* Duration */}
-          <div className="flex gap-4 border-b pb-4">
-            <i className="ri-time-fill text-xl"></i>
-
-            <div>
-              <h4 className="font-medium">
-                Ride Duration
-              </h4>
-
-              <p className="text-gray-600">
-                {props.ride?.duration ? `${props.ride.duration} minutes` : "Not available"}
               </p>
             </div>
           </div>

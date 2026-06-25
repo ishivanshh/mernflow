@@ -22,11 +22,7 @@ const CaptainDetails = () => {
         <div className="flex items-center justify-between">
 
           <div className="flex items-center gap-4">
-            <img
-              className="h-14 w-14 rounded-full object-fit"
-              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTEouMzzrpU3iHAyGWzn_Ly8D7PwTLSF973sei9nCqgsQ&s=10"
-              alt="Captain"
-            />
+           {/* add img tag here */}
 
             <div>
               <h4 className="text-lg font-semibold">

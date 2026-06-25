@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import FinishRide from "../components/FinishRide.jsx";
 import { useLocation } from "react-router-dom";
-import { endRide } from "../../../Backend/services/ride.services.js";
+
 
 const CaptainRiding = () => {
   const [finishRidePanel, setFinishRidePanel] = useState(false);
@@ -38,15 +38,15 @@ const CaptainRiding = () => {
   );
 
   return (
-    <div className="h-screen bg-white relative">
+    <div className="relative h-screen overflow-hidden bg-white">
       {/* Header */}
-      <div className="fixed top-0 left-0 w-full p-4 flex justify-end z-10">
+      <div className="fixed top-0 left-0 w-full p-4 flex justify-end z-[1200]">
         <button className="bg-white shadow-md p-2 rounded-full">
           <i className="ri-logout-box-r-line text-2xl"></i>
         </button>
       </div>
 
-      <div className="h-4/5">
+      <div className="relative z-0 h-4/5">
         <MapContainer
           center={mapPosition}
           zoom={13}
@@ -62,7 +62,7 @@ const CaptainRiding = () => {
         onClick={() => {
           setFinishRidePanel(true);
         }}
-        className="h-1/5 relative bg-amber-500 p-5 pt-8 flex items-center justify-between gap-3"
+        className="relative z-[500] h-1/5 bg-amber-500 p-5 pt-8 flex items-center justify-between gap-3"
       >
         <h5 className="text-center text-black absolute top-0 left-1/2 -translate-x-1/2 p-1 text-2xl">
           <i className="ri-arrow-up-wide-fill text-black text-3xl"></i>
@@ -83,7 +83,7 @@ const CaptainRiding = () => {
       </div>
       <div
         ref={finishRidePanelRef}
-        className="fixed z-10 bottom-0 bg-white px-3 py-10 translate-y-full pt-12 w-full"
+        className="fixed z-[1400] bottom-0 left-0 bg-white px-3 py-10 translate-y-full pt-12 w-full shadow-2xl"
       >
         <FinishRide
           ride={rideData}
