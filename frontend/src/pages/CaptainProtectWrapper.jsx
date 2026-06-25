@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react'
+import { useContext, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { CaptainDataContext } from "../contexts/CaptainContext.jsx";
@@ -10,12 +10,20 @@ const CaptainProtectWrapper = ({
     const navigate = useNavigate()
     const { setCaptain } = useContext(CaptainDataContext)
     const [isLoading, setIsLoading] = useState(true)
+    const hasCheckedAuth = useRef(false)
 
     useEffect(() => {
         if (!token) {
+            hasCheckedAuth.current = false
             navigate("/captain-login")
             return
         }
+
+        if (hasCheckedAuth.current) {
+            return
+        }
+
+        hasCheckedAuth.current = true
 
         axios.get(`${import.meta.env.VITE_BASE_URL}/captains/profile`, {
             headers: {

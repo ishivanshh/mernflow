@@ -1,6 +1,10 @@
-import React from 'react'
-
 const RidePopUp = (props) => {
+  const passengerName = props.ride?.user?.fullname
+    ? `${props.ride.user.fullname.firstname ?? ""} ${props.ride.user.fullname.lastname ?? ""}`.trim()
+    : props.ride?.fullname
+      ? `${props.ride.fullname.firstname ?? ""} ${props.ride.fullname.lastname ?? ""}`.trim()
+      : "Passenger";
+
   return (
       <div>
         <h5
@@ -14,7 +18,7 @@ const RidePopUp = (props) => {
       <div class ="flex items-center justify-between p-3 bg-yellow-500 rounded-xl mt-4">
         <div class ="flex items-center gap-3">
             <img class ="h-15 w-15 object-fit rounded-full " src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTEouMzzrpU3iHAyGWzn_Ly8D7PwTLSF973sei9nCqgsQ&s=10" alt="" />
-            <h2 class ="text-xl">{props.ride?.fullname.firstname + " " + props.ride?.fullname.lastname }</h2>
+            <h2 class ="text-xl">{passengerName}</h2>   
         </div>
         <h5 class = "text-lg font-semibold">2.2Km</h5>
       </div>
@@ -41,9 +45,7 @@ const RidePopUp = (props) => {
                 </div>
             </div>
          </div>
-         <button onClick = {() => {
-          props.setConfirmRidePopup(true)
-         }}   class ="w-full mt-5 bg-green-500 text-black font-semibold rounded-lgp p-2">Accept</button>
+         <button onClick = {props.confirmRide}   class ="w-full mt-5 bg-green-500 text-black font-semibold rounded-lgp p-2">Accept</button>
          <button onClick={() => {
           props.setRidePopupPanel(false)
          }} 

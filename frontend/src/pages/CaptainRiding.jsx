@@ -1,15 +1,26 @@
-import React from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { useState, useRef } from "react";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import FinishRide from "../components/FinishRide.jsx";
+import { useLocation } from "react-router-dom";
+import { endRide } from "../../../Backend/services/ride.services.js";
 
 const CaptainRiding = () => {
+  const [finishRidePanel, setFinishRidePanel] = useState(false);
+  const finishRidePanelRef = useRef(null);
+  const location = useLocation();
+  const rideData = location.state?.ride;
+  const passenger = rideData?.user;
+  const passengerName = passenger?.fullname
+    ? `${passenger.fullname.firstname ?? ""} ${passenger.fullname.lastname ?? ""}`.trim()
+    : "Passenger";
+  const mapPosition = [
+    rideData?.captain?.location?.lat ?? 28.6139,
+    rideData?.captain?.location?.lon ?? 77.209,
+  ];
 
-   const [finishRidePanel, setFinishRidePanel] = useState(false);
-    const finishRidePanelRef = useRef(null);
-
+ 
 
   useGSAP(
     function () {
@@ -35,35 +46,49 @@ const CaptainRiding = () => {
         </button>
       </div>
 
-      {/* Map Section */}
       <div className="h-4/5">
         <MapContainer
-          center={[28.6139, 77.2090]}
+          center={mapPosition}
           zoom={13}
           className="h-full w-full"
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          <Marker position={[28.6139, 77.2090]} />
+          <Marker position={mapPosition} />
         </MapContainer>
       </div>
-      <div onClick={() => {
-        setFinishRidePanel(true)
-      }}
-       class="h-1/5 relative pt-10 bg-amber-500 p-6 flex items-center  justify-between">
-        <h5 onClick={() => {}} class="text-center text-black absolute top-0 p-1  mx-45 text-2xl w-[][90]%">
-          <i class="ri-arrow-down-wide-fill text-black text-3xl"></i>
+      <div
+        onClick={() => {
+          setFinishRidePanel(true);
+        }}
+        className="h-1/5 relative bg-amber-500 p-5 pt-8 flex items-center justify-between gap-3"
+      >
+        <h5 className="text-center text-black absolute top-0 left-1/2 -translate-x-1/2 p-1 text-2xl">
+          <i className="ri-arrow-up-wide-fill text-black text-3xl"></i>
         </h5>
 
-        <h3 class="text-xl font-medium">4KM Away</h3>
-        <button class="bg-green-600 text-white font-semibold p-3 px-10 rounded-lg">
-          Completed Ride
+        <div className="min-w-0">
+          <h3 className="truncate text-xl font-semibold capitalize">{passengerName}</h3>
+          <p className="truncate text-sm text-amber-950"> Drop :{rideData?.destination ?? "Destination not available"}</p>
+        </div>
+        <div className="shrink-0 text-right">
+          <p className="text-xs font-medium text-amber-950">Fare</p>
+          <p className="text-lg font-bold">₹{rideData?.fare ?? "--"}</p>
+        </div>
+        <button
+        className="shrink-0 bg-green-600 text-white font-medium p-3 px-1 rounded-lg">
+          Complete Ride
         </button>
       </div>
-      <div ref = {finishRidePanelRef}
-       class="fixed z-10 bottom-0 bg-white px-3 py-10 translate-y-full pt-12 w-full">
-       <FinishRide setFinishRidePanel = {setFinishRidePanel}/>
+      <div
+        ref={finishRidePanelRef}
+        className="fixed z-10 bottom-0 bg-white px-3 py-10 translate-y-full pt-12 w-full"
+      >
+        <FinishRide
+          ride={rideData}
+          setFinishRidePanel={setFinishRidePanel}
+        />
       </div>
     </div>
   );

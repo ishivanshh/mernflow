@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { UserDataContext } from "../contexts/UserContext.jsx";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -10,13 +10,21 @@ const UserProtectWrapper = ({ children }) => {
   const { setUser } = useContext(UserDataContext);
 
   const [isLoading, setIsLoading] = useState(true);
+  const hasCheckedAuth = useRef(false);
 
   useEffect(() => {
     const fetchUser = async () => {
       if (!token) {
+        hasCheckedAuth.current = false;
         navigate("/login");
         return;
       }
+
+      if (hasCheckedAuth.current) {
+        return;
+      }
+
+      hasCheckedAuth.current = true;
 
       try {
         const response = await axios.get(

@@ -64,6 +64,7 @@ function getOtp(num){
 }
 
 module.exports.createRide = async ({
+
     user, pickup, destination, vehicleType
 }) => {
     if (!user || !pickup || !destination || !vehicleType) {
@@ -85,3 +86,86 @@ module.exports.createRide = async ({
     return ride;
 }
 
+module.exports.confirmRide = async({ rideId, captain }) => {
+    if(!rideId){
+        throw new Error('ride id is required');
+    }
+    if(!captain){
+        throw new Error('captain is required');
+    }
+
+    const ride = await rideModel.findOneAndUpdate({
+        _id : rideId
+    }, {
+        status : 'accepted',
+        captain : captain._id
+    }, {
+        new : true
+    }).select('+otp').populate('user').populate('captain');
+
+    if(!ride){
+        throw new Error('Ride not found');
+    }
+
+    return ride;
+}
+
+
+module.exports.startRide = async ({ rideId , otp , captain}) => {
+    if(!rideId || !otp){
+        throw new Error ('ride id and otp are required!')
+    }
+    if(!captain){
+        throw new Error ('captain is required!')
+    }
+
+    const ride = await rideModel.findOne({
+        _id : rideId
+    }).populate('user').populate('captain').select('+otp');
+
+    if(!ride){
+        throw new Error('ride not found')
+    }
+    if(ride.status !== 'accepted'){
+        throw new Error('ride not accepted')
+    }
+    if(ride.otp !== otp){
+        throw new Error('invalid otp')
+    }
+    const startedRide = await rideModel.findOneAndUpdate({
+        _id : rideId
+    }, {
+        status : 'ongoing'
+    }, {
+        new : true
+    }).populate('user').populate('captain').select('+otp');
+
+    return startedRide;
+}
+
+
+module.exports.endRide = async ({ rideId , captain}) => {
+     if(!rideId){
+        throw new Error ('ride id and otp are required!')
+    }
+
+     const ride = await rideModel.findOne({
+        _id : rideId,
+        captain : captain._id
+    }).populate('user').populate('captain').select('+otp');
+
+     if(!ride){
+        throw new Error('ride not found')
+    }
+    if(ride.status !== 'ongoing'){
+        throw new Error('ride not ongoing')
+    }
+
+    await rideModel.findByIdAndUpdate({
+        _id : rideId
+    },
+    {
+        status : 'completed'
+    })
+    return ride;
+}

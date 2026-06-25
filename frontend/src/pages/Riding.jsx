@@ -1,16 +1,37 @@
-import React from "react";
-import { Phone, MessageSquare, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import firstMeetImage from "../assets/firstmeet.png";
-import {Link} from "react-router-dom";
-
+import { Link, useLocation } from "react-router-dom";
+import { useEffect , useContext } from "react";
+import { SocketContext } from "../contexts/SocketContext";
+import { useNavigate } from "react-router-dom";
 
 const Riding = () => {
+  const location = useLocation();
+  const { ride } = location.state || {};
+  const captain = ride?.captain;
+  const vehicle = captain?.vehicle;
+  const captainName = captain?.fullname
+    ? `${captain.fullname.firstname ?? ""} ${captain.fullname.lastname ?? ""}`.trim()
+    : "Captain";
+  const vehicleName = [vehicle?.color, vehicle?.vehicleType]
+    .filter(Boolean)
+    .join(" ");
+
+  const { socket } = useContext(SocketContext);
+  const navigate = useNavigate();
+
+  socket.on('ride-ended', () => {
+    navigate('/home')
+  })
+
+
+
+
   return (
     <div className="h-screen w-full bg-white flex flex-col">
-        <Link to = '/home' class ="fixed right-4 h-10 top-5 w-10 bg-white flex items-center justify-center rounded-full">
-            <i class="ri-home-heart-line text-2xl font-medium"></i>
+        <Link to = '/home' className ="fixed right-4 h-10 top-5 w-10 bg-white flex items-center justify-center rounded-full">
+            <i className="ri-home-heart-line text-2xl font-medium"></i>
         </Link>
-      {/* Map Section */}
       <div className="h-1/2 w-full">
         <img
          src={firstMeetImage}
@@ -19,20 +40,17 @@ const Riding = () => {
         />
       </div>
 
-      {/* Bottom Sheet */}
       <div className="h-1/2 bg-white rounded-t-3xl shadow-2xl p-5 overflow-y-auto">
 
-        {/* Drag Handle */}
         <div className="w-16 h-1.5 bg-gray-300 rounded-full mx-auto mb-4"></div>
 
-        {/* Ride Status */}
         <div className="flex justify-between items-center">
           <div>
             <p className="text-sm text-gray-500">
-             Dropping in
+             Ride status
             </p>
             <h2 className="text-2xl font-bold">
-              40 mins
+              {ride?.status ?? "Ongoing"}
             </h2>
           </div>
 
@@ -41,21 +59,20 @@ const Riding = () => {
           </span>
         </div>
 
-        {/* Driver Card */}
         <div className="mt-5 border rounded-2xl p-4">
 
           <div className="flex justify-between items-center">
 
             <div className="flex gap-3 items-center">
               <img
-                src="https://randomuser.me/api/portraits/men/32.jpg"
+                src=""
                 alt="Driver"
                 className="w-14 h-14 rounded-full object-cover"
               />
 
               <div>
-                <h3 className="font-semibold text-lg">
-                  Rahul Sharma
+                <h3 className="font-semibold text-lg ">
+                  {captainName}
                 </h3>
 
                 <div className="flex items-center gap-1 text-sm">
@@ -66,33 +83,31 @@ const Riding = () => {
             </div>
 
             <div className="text-right">
-              <h3 className="font-bold text-lg">
-                UP70 AB 2345
+              <h3 className="font-bold text-sm">
+                {vehicle?.plate ?? "--"}
               </h3>
 
-              <p className="text-gray-500">
-                Honda Amaze
+              <p className="capitalize text-gray-500">
+                {vehicleName || "Vehicle details unavailable"}
+              </p>
+              <p className="text-sm text-gray-400">
+                Max: {vehicle?.capacity ?? "--"}
               </p>
             </div>
 
           </div>
-
-          {/* Contact Buttons */}
-          <div className="flex gap-3 mt-4">
-
-            <button className="flex-1 bg-gray-100 py-3 rounded-xl flex items-center justify-center gap-2">
-              <MessageSquare size={18} />
-              Message
-            </button>
-
-            <button className="bg-gray-100 p-3 rounded-xl">
-              <Phone size={20} />
-            </button>
-
-          </div>
         </div>
 
-        {/* Destination */}
+        <div className="mt-5 border rounded-2xl p-4">
+          <p className="text-gray-500 text-sm mb-1">
+            Pickup Location
+          </p>
+
+          <h3 className="font-semibold text-lg">
+            {ride?.pickup ?? "Pickup not available"}
+          </h3>
+        </div>
+
         <div className="mt-5 border rounded-2xl p-4">
 
           <p className="text-gray-500 text-sm mb-1">
@@ -100,16 +115,15 @@ const Riding = () => {
           </p>
 
           <h3 className="font-semibold text-lg">
-            Civil Lines, Prayagraj
+            {ride?.destination ?? "Destination not available"}
           </h3>
 
           <p className="text-gray-400 text-sm">
-            6.2 km • Approx 15 mins remaining
+            Captain will drop you at this location
           </p>
 
         </div>
 
-        {/* Fare Details */}
         <div className="mt-5 border rounded-2xl p-4">
 
           <div className="flex justify-between mb-3">
@@ -118,7 +132,7 @@ const Riding = () => {
             </span>
 
             <span className="font-semibold">
-              ₹184
+              ₹{ride?.fare ?? "--"}
             </span>
           </div>
 
@@ -128,13 +142,12 @@ const Riding = () => {
             </span>
 
             <span className="font-medium">
-              UPI
+              CASH
             </span>
           </div>
 
         </div>
 
-        {/* Payment Button */}
         <button
           className="
             w-full
@@ -149,7 +162,7 @@ const Riding = () => {
             transition
           "
         >
-          Make Payment ₹184
+          Make Payment ₹{ride?.fare ?? "--"}
         </button>
 
       </div>

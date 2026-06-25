@@ -19,6 +19,7 @@ import "leaflet/dist/leaflet.css";
 import { SocketContext } from "../contexts/SocketContext.jsx";
 import { UserDataContext } from "../contexts/UserContext.jsx";
 import { useContext } from "react";
+import { useNavigate } from "react-router-dom";
 
 
 const fallbackPosition = [28.6139, 77.209];
@@ -53,8 +54,8 @@ const Home = () => {
   const [vehiclePanel, setVehiclePanel] = useState(false);
   const [confirmRidePanel, setConfirmRidePanel] = useState(false);
   const [vehicleFound, setVehicleFound] = useState(false);
-  const [waitingForDriver] = useState(false);
-
+  
+  const [waitingForDriver, setWaitingForDriver] = useState(false);
   const [pickupSuggestion, setPickupSuggestion] = useState([]);
   const [destinationSuggestion, setDestinationSuggestion] = useState([]);
   const [activeField, setActiveField] = useState(null);
@@ -68,14 +69,38 @@ const Home = () => {
   const [vehicleType, setVehicleType] = useState(null); 
   const { user } = useContext(UserDataContext);
   const {socket} = useContext(SocketContext);
+  const [ride, setride] = useState(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
-    console.log(user)
-    // Only send join when we have a valid user id
     if (socket && user?._id) {
       socket.emit('join', { userType: "user", userId: user._id });
     }
-  }, [socket, user]);
+  }, [socket, user?._id]);
+
+  useEffect(() => {
+    if (!socket) {
+      return;
+    }
+
+    const handleRideConfirmed = (ride) => {
+      setride(ride);
+      setVehicleFound(false);
+      setWaitingForDriver(true);
+    };
+
+    socket.on('ride-confirmed', handleRideConfirmed);
+
+    return () => {
+      socket.off('ride-confirmed', handleRideConfirmed);
+    };
+  }, [socket]);
+
+
+  socket.on('ride-started', ride => {
+    setWaitingForDriver(false)
+    navigate('/riding' , {state : { ride }})
+  });
 
   // Updates the pickup text and fetches matching location suggestions.
   const handlePickupChange = async (e) => {
@@ -426,8 +451,6 @@ const Home = () => {
       </div>
       <div
         ref={confirmRidePanelRef}
-        fare={fare}
-        createRide={createRide}
         className="fixed bottom-0 z-[1100] w-full translate-y-full bg-white px-3 py-10 pt-12"
       >
         <ConfirmRide
@@ -436,7 +459,6 @@ const Home = () => {
         destination={destination}
         fare={fare}
         vehicleType={vehicleType}
-        passenger={passenger}
           setConfirmRidePanel={setConfirmRidePanel}
           setVehicleFound={setVehicleFound}
         />
@@ -452,13 +474,18 @@ const Home = () => {
         destination={destination}
         vehicleType={vehicleType}
         createRide={createRide}
+      
         setVehicleFound={setVehicleFound} />
       </div>
       <div
         ref={waitingForDriverRef}
         className="fixed bottom-0 z-[1100] w-full translate-y-full bg-white px-3 py-10 pt-12"
       >
-        <WaitingForDriver waitingForDriver={waitingForDriver} />
+        <WaitingForDriver
+        ride={ride}
+        setVehicleFound={setVehicleFound}
+         setWaitingForDriver={setWaitingForDriver}
+         waitingForDriver={waitingForDriver} />
       </div>
     </div>
   );

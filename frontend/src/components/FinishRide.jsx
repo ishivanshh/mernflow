@@ -1,6 +1,34 @@
 import React from "react";
+import axios from "axios";
+import { Navigate, useNavigate } from "react-router-dom";
 
-const FinishRide = () => {
+
+
+const FinishRide = (props) => {
+
+  const navigate = useNavigate();
+  const passenger = props.ride?.user;
+  const passengerName = passenger?.fullname
+    ? `${passenger.fullname.firstname ?? ""} ${passenger.fullname.lastname ?? ""}`.trim()
+    : "Passenger";
+
+
+   async function endRide () {
+
+    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/rides/end-ride`, {
+      
+        rideId : props.ride._id
+    },{
+        headers : {
+          Authorization : `Bearer ${localStorage.getItem('token')}`
+        }
+      })
+
+      if(response.status === 200){
+        navigate('/captain-home')
+      }
+    }
+
   return (
     <div className="h-screen bg-white flex flex-col overflow-scroll">
 
@@ -29,18 +57,18 @@ const FinishRide = () => {
 
           <div>
             <h3 className="font-semibold text-lg">
-              Shivansh Saxena
+              {passengerName}
             </h3>
 
             <p className="text-gray-500">
-              Passenger
+              {passenger?.email ?? "Passenger"}
             </p>
           </div>
         </div>
 
         <div className="text-right">
           <h2 className="font-bold text-2xl">
-            $192.32
+            ₹{props.ride?.fare ?? "--"}
           </h2>
 
           <p className="text-green-600 text-sm">
@@ -69,7 +97,7 @@ const FinishRide = () => {
               </h4>
 
               <p className="text-gray-600">
-                Lanka Gate, BHU, Varanasi
+                {props.ride?.pickup ?? "Pickup not available"}
               </p>
             </div>
           </div>
@@ -84,7 +112,7 @@ const FinishRide = () => {
               </h4>
 
               <p className="text-gray-600">
-                Cantt Railway Station, Varanasi
+                {props.ride?.destination ?? "Destination not available"}
               </p>
             </div>
           </div>
@@ -99,7 +127,7 @@ const FinishRide = () => {
               </h4>
 
               <p className="text-gray-600">
-                12.4 km
+                {props.ride?.distance ? `${props.ride.distance} km` : "Not available"}
               </p>
             </div>
           </div>
@@ -114,7 +142,7 @@ const FinishRide = () => {
               </h4>
 
               <p className="text-gray-600">
-                28 Minutes
+                {props.ride?.duration ? `${props.ride.duration} minutes` : "Not available"}
               </p>
             </div>
           </div>
@@ -139,7 +167,7 @@ const FinishRide = () => {
       {/* Bottom Actions */}
       <div className="p-5 border-t">
 
-        <button
+        <button onClick={endRide}
           className="
             w-full
             bg-green-600

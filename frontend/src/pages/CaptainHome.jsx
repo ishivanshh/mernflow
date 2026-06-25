@@ -1,4 +1,5 @@
 import { useRef , useState } from "react";
+import axios from "axios";
 import firstMeetImage from "../assets/firstmeet.png";
 import CaptainDetails from "../components/CaptainDetails";
 import RidePopUp from "../components/RidePopUp";
@@ -69,10 +70,23 @@ const CaptainHome = () => {
     return () => clearInterval(locationInterval);
   }, [socket, captain?._id]);
 
+  useEffect(() => {
+    if (!socket) {
+      return;
+    }
 
-  socket.on('new-ride' , (data) => {
-    console.log(data)
-  });
+    const handleNewRide = (data) => {
+      console.log(data);
+      setride(data);
+      setRidePopupPanel(true);
+    };
+
+    socket.on('new-ride', handleNewRide);
+
+    return () => {
+      socket.off('new-ride', handleNewRide);
+    };
+  }, [socket]);
 
   useGSAP(
     function () {
@@ -103,6 +117,20 @@ const CaptainHome = () => {
     },
     [confirmRidePopup],
   );
+
+  async function confirmRide(){
+    await axios.post(`${import.meta.env.VITE_BASE_URL}/rides/confirm`, {
+      rideId : ride._id,
+      captainId : captain._id,
+
+    }, {
+      headers : {
+        Authorization : `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+      setRidePopupPanel(false)
+      setConfirmRidePopup(true)
+  }
 
   return (
     <div className="h-screen bg-white">
@@ -137,11 +165,15 @@ const CaptainHome = () => {
        <RidePopUp 
        ride={ride}
        setRidePopupPanel = {setRidePopupPanel} 
-       setConfirmRidePopup = {setConfirmRidePopup} />
+       setConfirmRidePopup = {setConfirmRidePopup}
+       confirmRide={confirmRide} 
+       />
       </div>
       <div ref = {confirmRidePopupRef}
        class="fixed z-10 bottom-0 bg-white px-3 py-10 translate-y-full pt-12 w-full">
-       <ConfirmRidePopup  setConfirmRidePopup ={setConfirmRidePopup} setRidePopupPanel = {setRidePopupPanel} />
+       <ConfirmRidePopup  
+       ride={ride}
+       setConfirmRidePopup ={setConfirmRidePopup} setRidePopupPanel = {setRidePopupPanel} />
       </div>
     </div>
   );
